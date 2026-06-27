@@ -1,51 +1,49 @@
-# Definition of Done (DoD) - Estándar de Calidad Obligatorio
+# Definition of Done (DoD) - Mandatory Quality Standards
 
-Este documento define los requisitos mínimos e indispensables que CUALQUIER agente de IA o desarrollador humano debe cumplir antes de considerar una tarea como "Terminada" (Done) y abrir un Pull Request (PR). El incumplimiento de cualquiera de estos puntos resultará en el rechazo automático del cambio.
-
----
-## 1. Código de Negocio (Application Code)
-*   **Análisis Estático:** El código debe pasar el Linter y el formateador oficial sin warnings.
-*   **Arquitectura:** Los cambios deben respetar los patrones definidos en `.ai/architecture.md`. Está prohibido introducir dependencias circulares o saltarse las capas de abstracción.
-*   **Dependencies:** Every new dependency must be adequately motivated, and must imply an addition of an ADR record to the architecture document.
-*   **Métricas de Calidad de Código:**
-    *   **Complejidad Ciclomática:** No se permiten funciones con una complejidad superior a **10**.
-    *   **Duplicación de Código:** El código duplicado introducido debe ser del **0%** (tolerancia cero a copiar y pegar bloques idénticos).
-*   **Gestión de la Deuda Técnica (Regla de Oro):**
-    *   Si una tarea incrementa la deuda técnica (p. ej., introduce un *code smell* necesario por limitaciones de una API externa), el agente **DEBE** cumplir una de estas tres condiciones:
-        1. **Refactorización Acompañante:** Acompañar el cambio con un refactoring en el mismo PR que pague una cantidad equivalente o mayor de deuda técnica preexistente para mantener el balance en neutro o positivo.
-        2. **Documentación Excepcional:** Justificar explícitamente en el código (`// DEBT: ...`) y en la descripción del PR el *porqué* es estrictamente necesario, junto con un plan para resolverlo.
-        3. **Rechazo:** Si el incremento no está justificado ni compensado, el cambio será **rechazado automáticamente**.
-
-## 2. Estrategia de Pruebas (Testing) - Criterios Estrictos
-*   **Cobertura Mínima:** Cualquier línea de código nueva o modificada debe tener una cobertura de tests unitarios de al menos el **80%**.
-*   **Pruebas de Integración:** Si la funcionalidad añade un nuevo endpoint, contrato, o flujo de datos con base de datos/APIs externas, se debe incluir al menos un test de integración.
-*   **Regresión:** La suite completa de tests existentes debe ejecutarse y pasar con éxito ($100\%$ de éxito).
-*   **Calidad del Test:** Está prohibido el uso de aserciones genéricas (ej. `expect(true).toBe(true)`). Cada test debe validar un comportamiento único y limpiar sus propios mocks/datos al finalizar.
-
-## 3. Seguridad y Dependencias
-*   **Vulnerabilidades:** No se permite la introducción de nuevas dependencias que contengan vulnerabilidades conocidas (CVEs) de nivel Medio, Alto o Crítico.
-*   **Secretos:** Está estrictamente prohibido incluir credenciales, tokens, contraseñas o URLs de entornos productivos en el código. Usa variables de entorno.
-*   **Análisis Estático de Seguridad (SAST):** El código debe pasar el escáner de seguridad del proyecto sin alertas activas.
-
-## 4. Infraestructura como Código (IaC) y CI/CD
-*   **Validación de Infraestructura:** Si la tarea requiere cambios en la infraestructura (Terraform, CloudFormation, etc.), el código de infraestructura debe ser validado con su respectivo linter (ej. `tflint`) y pasar los tests de arquitectura de la nube.
-*   **Pipeline de CI:** El código propuesto debe ser capaz de compilar y pasar el pipeline de integración continua de manera local o en una rama efímera antes de solicitar la revisión de código.
-
-## 5. Arquitectura y Documentación Viva
-*   **Registros de Decisión Arquitectónica (ADR):** Cualquier cambio que modifique el diseño del software, la estructura de la base de datos, los contratos de las APIs principales o introduzca una nueva biblioteca clave **DEBE ir acompañado de un nuevo archivo ADR** en la carpeta `docs/architecture-decisions/`.
-    *   El formato del ADR debe seguir el estándar MADS (Título, Contexto, Decisión, Consecuencias).
-    *   El *Reviewer Agent* rechazará cualquier PR que altere la estructura del proyecto si no detecta un commit en la carpeta de ADRs.
-*   **Documentación de Código:** Las funciones complejas o decisiones de diseño no evidentes deben estar documentadas en el propio código mediante comentarios estandarizados.
-*   **Documentación del Proyecto:** Si el cambio modifica el comportamiento de un componente o API, se debe actualizar el archivo `.md` correspondiente en la carpeta `docs/`.
-*   **Registro de Cambios (Changelog):** Añadir una breve descripción del cambio en el archivo de control o generar un mensaje de commit semántico (Semantic Commit) claro y descriptivo.
+This document establishes the minimum, non-negotiable requirements that ANY AI agent or human developer must fulfill before a task can be considered "Done" and submitted as a Pull Request (PR). Failure to meet any of these criteria will result in an automatic rejection of the changes.
 
 ---
 
-## Lista de Verificación para el Agente Revisor (Reviewer Agent)
-Antes de aprobar un PR, verifica:
-1. [ ] ¿El código hace EXACTAMENTE lo que pide el ticket?
-2. [ ] ¿Se han añadido los tests unitarios/integración correspondientes?
-3. [ ] ¿Se ha actualizado la documentación asociada?
-4. [ ] ¿La suite de CI pasa sin errores?
+## 1. Application Code & Quality Metrics
+*   **Static Analysis:** Code must pass the project's official Linter and Formatter with zero errors or warnings.
+*   **Cyclomatic Complexity:** No individual function or method may exceed a cyclomatic complexity score of **10**.
+*   **Code Duplication:** New code must introduce **0% duplication** (zero tolerance for copy-pasting identical blocks). Reuse abstractions instead.
+*   **Technical Debt Management (The Golden Rule):**
+    *   If a task must introduce technical debt (e.g., a temporary workaround due to external API limitations), the agent **MUST** satisfy one of these three conditions:
+        1. **Accompanying Refactoring:** Include a refactor within the same PR that pays down an equivalent or greater amount of pre-existing technical debt, maintaining a neutral or positive quality balance.
+        2. **Exceptional Documentation:** Explicitly document the debt inline using a `// DEBT: [Reason & Strategy]` comment, state it clearly in the PR description, and outline a concrete plan to resolve it.
+        3. **Rejection:** If the debt increase is neither justified nor offset by refactoring, the change will be **automatically rejected**.
 
-Si falta algún check, deniega la aprobación y solicita las correcciones al agente responsable.
+## 2. Testing & Test Quality (Strict Gates)
+*   **Minimum Coverage:** All new or modified lines of code must achieve a minimum of **80% unit test coverage**.
+*   **Integration Tests:** If the functionality introduces a new API endpoint, data contract, or external system integration (databases, third-party APIs), it must include at least one robust integration test.
+*   **Regression:** The complete existing test suite must be executed and achieve a **100% success rate**.
+*   **Test Meaningfulness:** "Shallow tests" (tests that execute code paths to boost coverage numbers without asserting real behavior) are strictly prohibited. Assertions must be precise and explicitly targeted.
+*   **State Isolation:** Tests must thoroughly clean up their own mocks, stubs, and database states (`afterEach`, `afterAll`) to guarantee zero cross-test contamination.
+
+## 3. Security & Supply Chain
+*   **Vulnerability Threshold:** No new dependencies containing Medium, High, or Critical known vulnerabilities (CVEs) may be introduced.
+*   **Secret Prevention:** Hardcoding credentials, API keys, private tokens, or environment-specific configuration strings is strictly forbidden. All configuration must be driven by environment variables.
+*   **Security Scanning (SAST):** The code changes must pass the repository's security pipelines with zero active flags.
+
+## 4. Infrastructure as Code (IaC) & CI/CD
+*   **Infrastructure Validation:** Any changes modifying infrastructure manifests (Terraform, Ansible, etc.) must pass their respective linting tools (e.g., `tflint`) and cloud architecture syntax checks.
+*   **Pipeline Health:** The proposed code must compile perfectly and pass all local continuous integration scripts before a remote PR review is requested.
+
+## 5. Live Documentation & Architecture
+*   **Inline Documentation:** Complex logic or non-obvious business rules must be clearly documented inline using standardized codebase comment formats.
+*   **Project Documentation:** If an API contract, component behavior, or setup step changes, the corresponding `.md` file inside the `docs/` folder must be updated in the same commit.
+*   **Architecture Decision Records (ADR):** Any change modifying the software design, core database schemas, foundational API contracts, or introducing a core framework component **MUST include a new ADR entry** in `docs/architecture-decisions/` following the MADS template.
+    *   The *Reviewer Agent* will automatically reject any structural change that lacks a corresponding ADR file update.
+
+---
+
+## Checklists for the Reviewer Agent
+Before granting approval to any Pull Request, verify:
+1. [ ] Does the implementation match the exact scope of the issue/ticket?
+2. [ ] Are all static analysis, complexity (max 10), and duplication (0%) metrics fully satisfied?
+3. [ ] If architecture was impacted, has an ADR been added to `docs/architecture-decisions/`?
+4. [ ] Does the code hit the required 80% test coverage and satisfy the mutation test gate?
+5. [ ] Is the codebase entirely free of new vulnerabilities or exposed secrets?
+
+If any check is incomplete, deny the merge request, block the pipeline, and provide actionable feedback to the authoring agent.
