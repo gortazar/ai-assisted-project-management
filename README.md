@@ -3,6 +3,7 @@ This repository is a template with the necessary skills so that the development 
 
 The enforced flow is as follows:
 
+```
 [Human Intent] 
       │
       ▼
@@ -21,4 +22,5 @@ The enforced flow is as follows:
       │
       ▼
 🔎 Reviewer Agent ────────► Enforces Stack-Specific DoD ──► Merges to Main
+```
 
